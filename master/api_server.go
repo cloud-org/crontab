@@ -23,9 +23,11 @@ var (
 //init server
 func InitApiServer() (err error) {
 	var (
-		mux        *http.ServeMux // 路由对象
-		listener   net.Listener
-		httpServer *http.Server
+		mux           *http.ServeMux // 路由对象
+		listener      net.Listener
+		httpServer    *http.Server
+		staticDir     http.Dir
+		staticHandler http.Handler
 	)
 	//		配置路由
 	mux = http.NewServeMux()
@@ -33,6 +35,12 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
+
+	// 静态文件目录
+	staticDir = http.Dir(G_config.Webroot)
+	staticHandler = http.FileServer(staticDir)
+	// strip / 之后 拼接上 staticDir 可以访问到 ./webroot/index.html
+	mux.Handle("/", http.StripPrefix("/", staticHandler))
 
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {
 		fmt.Println(err)
