@@ -1,0 +1,14 @@
+{
+  "API 接口服务端口": "提供任务增删改查服务",
+  "api_port": 8070,
+  "API 接口读超时": "单位毫秒",
+  "api_read_timeout": 5000,
+  "API 接口写超时": "单位毫秒",
+  "api_write_timeout": 5000,
+  "etcd 集群列表": "可以配置多个，避免单点故障",
+  "etcd_endpoints": [
+    "127.0.0.1:2379"
+  ],
+  "etcd 连接超时时间": "单位毫秒",
+  "etcd_dial_timeout": 5000
+}
