@@ -30,6 +30,7 @@ func InitApiServer() (err error) {
 	//		配置路由
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
+	mux.HandleFunc("/job/delete", handleJobDelete)
 
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {
 		fmt.Println(err)
@@ -53,6 +54,38 @@ func InitApiServer() (err error) {
 
 	return
 
+}
+
+// delete job
+// POST /job/delete name=job1
+func handleJobDelete(w http.ResponseWriter, r *http.Request) {
+	var (
+		err    error
+		name   string
+		oldJob *common.Job
+		resp   []byte
+	)
+
+	if err = r.ParseForm(); err != nil {
+		goto ERR
+	}
+
+	name = r.PostForm.Get("name")
+
+	if oldJob, err = G_jobMgr.DeleteJob(name); err != nil {
+		goto ERR
+	}
+
+	if resp, err = common.BuildResponse(0, "success", oldJob); err == nil {
+		w.Write(resp)
+	}
+
+	return
+
+ERR:
+	if resp, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		w.Write(resp)
+	}
 }
 
 // create or modify job
