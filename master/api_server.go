@@ -31,6 +31,7 @@ func InitApiServer() (err error) {
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
+	mux.HandleFunc("/job/list", handleJobList)
 
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {
 		fmt.Println(err)
@@ -54,6 +55,29 @@ func InitApiServer() (err error) {
 
 	return
 
+}
+
+// 列举所有 job
+func handleJobList(w http.ResponseWriter, r *http.Request) {
+	var (
+		err     error
+		jobList []*common.Job
+		resp    []byte
+	)
+	if jobList, err = G_jobMgr.ListJobs(); err != nil {
+		goto ERR
+	}
+
+	if resp, err = common.BuildResponse(0, "success", jobList); err == nil {
+		w.Write(resp)
+	}
+
+	return
+
+ERR:
+	if resp, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		w.Write(resp)
+	}
 }
 
 // delete job

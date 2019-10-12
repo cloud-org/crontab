@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/ronething/golang-crontab/common"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc"
 	"time"
 )
@@ -55,7 +56,7 @@ func InitJobMgr() (err error) {
 }
 
 // 新增或者修改任务
-func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
+func (j *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 	//	把任务保存到 /cron/jobs/任务名 -> json 序列化
 	var (
 		jobKey    string
@@ -70,7 +71,7 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 	if jobValue, err = json.Marshal(job); err != nil {
 		return
 	}
-	if putResp, err = jobMgr.kv.Put(context.TODO(), jobKey, string(jobValue), clientv3.WithPrevKV()); err != nil {
+	if putResp, err = j.kv.Put(context.TODO(), jobKey, string(jobValue), clientv3.WithPrevKV()); err != nil {
 		return
 	}
 	//	 如果是更新，则返回旧值
@@ -89,7 +90,7 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 }
 
 // 删除任务
-func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
+func (j *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	var (
 		jobKey    string
 		delResp   *clientv3.DeleteResponse
@@ -99,7 +100,7 @@ func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	// 任务 key
 	jobKey = common.JobSaveDir + name
 	// 任务 value
-	if delResp, err = jobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
+	if delResp, err = j.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
 		return
 	}
 
@@ -110,6 +111,38 @@ func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 			return
 		}
 		oldJob = &oldJobObj
+	}
+
+	return
+}
+
+// 列出 etcd 所有任务
+func (j *JobMgr) ListJobs() (jobList []*common.Job, err error) {
+	var (
+		dirKey  string
+		getResp *clientv3.GetResponse
+		kvPair  *mvccpb.KeyValue
+		job     *common.Job
+	)
+
+	dirKey = common.JobSaveDir
+
+	if getResp, err = j.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
+		return
+	}
+
+	// 初始化数组空间 默认为 nil
+	jobList = make([]*common.Job, 0)
+
+	// 遍历任务 进行反序列化
+	for _, kvPair = range getResp.Kvs {
+		// 需要初始化 不然会有空指针错误 并且需要在内部初始化 不然最终会因为指向地址相同导致数据相同
+		job = &common.Job{}
+		if err = json.Unmarshal(kvPair.Value, job); err != nil {
+			err = nil
+			continue // 忽略错误
+		}
+		jobList = append(jobList, job)
 	}
 
 	return
