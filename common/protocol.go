@@ -24,7 +24,9 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 	response.Msg = msg
 	response.Data = data
 
-	resp, err = json.Marshal(response)
+	if resp, err = json.Marshal(response); err != nil {
+		return
+	}
+
 	return
 }
-

@@ -32,6 +32,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
+	mux.HandleFunc("/job/kill", handleJobKill)
 
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {
 		fmt.Println(err)
@@ -55,6 +56,35 @@ func InitApiServer() (err error) {
 
 	return
 
+}
+
+// 强杀一个任务
+// POST /job/kill name=job1
+func handleJobKill(w http.ResponseWriter, r *http.Request) {
+	var (
+		err  error
+		name string
+		resp []byte
+	)
+	if err = r.ParseForm(); err != nil {
+		goto ERR
+	}
+
+	name = r.PostForm.Get("name")
+
+	if err = G_jobMgr.KillJob(name); err != nil {
+		goto ERR
+	}
+	if resp, err = common.BuildResponse(0, "success", name); err == nil {
+		w.Write(resp)
+	}
+
+	return
+
+ERR:
+	if resp, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		w.Write(resp)
+	}
 }
 
 // 列举所有 job
