@@ -37,6 +37,11 @@ func main() {
 		goto ERR
 	}
 
+	// 启动执行器
+	if err = worker.InitExecutor(); err != nil {
+		goto ERR
+	}
+
 	// 启动调度器 任务管理器依赖于它 所以先初始化
 	if err = worker.InitScheduler(); err != nil {
 		goto ERR
