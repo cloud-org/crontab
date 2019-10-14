@@ -64,7 +64,7 @@ func (s *Scheduler) TryStartJob(jobPlan *common.JobSchedulePlan) () {
 	s.jobExecutingTable[jobPlan.Job.Name] = jobExecuteInfo
 
 	// 执行任务
-	fmt.Println("执行任务", jobExecuteInfo.Job.Name, jobExecuteInfo.PlanTime, jobExecuteInfo.RealTime)
+	fmt.Println("开始执行任务", jobExecuteInfo.Job.Name, jobExecuteInfo.PlanTime, jobExecuteInfo.RealTime)
 	G_executor.ExecuteJob(jobExecuteInfo)
 
 }
@@ -171,6 +171,10 @@ func (s *Scheduler) handleJobResult(jobExecuteResult *common.JobExecuteResult) {
 	// 删除执行状态
 	delete(s.jobExecutingTable, jobExecuteResult.ExecuteInfo.Job.Name)
 
-	fmt.Println("任务执行完成", jobExecuteResult.ExecuteInfo.Job.Name, string(jobExecuteResult.Output))
+	if jobExecuteResult.Err == nil {
+		fmt.Println("任务执行完成", jobExecuteResult.ExecuteInfo.Job.Name, string(jobExecuteResult.Output))
+	} else {
+		fmt.Println("任务执行结束", jobExecuteResult.ExecuteInfo.Job.Name, jobExecuteResult.Err)
+	}
 
 }

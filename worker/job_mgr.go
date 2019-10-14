@@ -128,3 +128,9 @@ func (j *JobMgr) watchJobs() (err error) {
 	return
 
 }
+
+func (j *JobMgr) CreateJobLock(jobName string) (jobLock *JobLock) {
+	//	返回一把锁
+	jobLock = InitJobLock(jobName, j.kv, j.lease)
+	return
+}
