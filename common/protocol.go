@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorhill/cronexpr"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -27,6 +28,7 @@ type JobExecuteInfo struct {
 	Job      *Job
 	PlanTime time.Time // 理论上的调度时间
 	RealTime time.Time // 实际的调度时间
+	Pid      int       // 任务主进程 pid
 }
 
 // HTTP 接口应答
@@ -88,6 +90,11 @@ func ExtractJobName(jobKey string) string {
 	return strings.TrimPrefix(jobKey, JobSaveDir)
 }
 
+// 提取任务名
+func ExtractKillerName(killerKey string) string {
+	return strings.TrimPrefix(killerKey, JobKillerDir)
+}
+
 func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
 	return &JobEvent{
 		EventType: eventType,
@@ -123,8 +130,20 @@ func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobE
 		Job:      jobSchedulePlan.Job,
 		PlanTime: jobSchedulePlan.NextTime, // 计算得来的调度时间
 		RealTime: time.Now(),               // 真实调度时间
+		Pid:      0,                        // 默认为 0，说明任务没有执行
 	}
 
 	return
 
+}
+
+// 强杀任务
+func (j *JobExecuteInfo) KillJob() (err error) {
+	if j.Pid == 0 {
+		return
+	}
+	if err = syscall.Kill(-j.Pid, syscall.SIGKILL); err != nil {
+		return
+	}
+	return
 }

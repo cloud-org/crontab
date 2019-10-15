@@ -55,7 +55,15 @@ func InitJobMgr() (err error) {
 		watcher: watcher,
 	}
 
-	G_jobMgr.watchJobs()
+	// 启动监听任务变化 put delete
+	if err = G_jobMgr.watchJobs(); err != nil {
+		return
+	}
+
+	// 启动任务
+	if err = G_jobMgr.watchKiller(); err != nil {
+		return
+	}
 
 	return
 
@@ -133,4 +141,47 @@ func (j *JobMgr) CreateJobLock(jobName string) (jobLock *JobLock) {
 	//	返回一把锁
 	jobLock = InitJobLock(jobName, j.kv, j.lease)
 	return
+}
+
+func (j *JobMgr) watchKiller() (err error) {
+
+	var (
+		watchChan  clientv3.WatchChan
+		watchResp  clientv3.WatchResponse
+		watchEvent *clientv3.Event
+		jobEvent   *common.JobEvent
+		jobName    string
+		job        *common.Job
+	)
+	// 获取当前任务
+	//	2、从该 revision 向后监听变化事件
+	go func() {
+		//	监听协程
+		watchChan = j.watcher.Watch(context.TODO(), common.JobKillerDir, clientv3.WithPrefix())
+		for watchResp = range watchChan {
+			for _, watchEvent = range watchResp.Events {
+				switch watchEvent.Type {
+				case mvccpb.PUT: // 任务保存事件
+					jobName = common.ExtractKillerName(string(watchEvent.Kv.Key))
+
+					job = &common.Job{
+						Name: jobName,
+					}
+
+					// 构造一个强杀事件
+					jobEvent = common.BuildJobEvent(common.JobEventKill, job)
+					fmt.Println("killer", *jobEvent)
+
+					// 推送给 scheduler
+					G_scheduler.PushJobEvent(jobEvent)
+
+				case mvccpb.DELETE: //	killer 租约到期，忽略
+				}
+			}
+		}
+
+	}()
+
+	return
+
 }

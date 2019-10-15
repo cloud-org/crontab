@@ -1,10 +1,11 @@
 package worker
 
 import (
-	"context"
+	"bytes"
 	"fmt"
 	"github.com/ronething/golang-crontab/common"
 	"os/exec"
+	"syscall"
 	"time"
 )
 
@@ -26,6 +27,7 @@ func (e *Executor) ExecuteJob(jobExecuteInfo *common.JobExecuteInfo) {
 			output  []byte
 			result  *common.JobExecuteResult
 			jobLock *JobLock
+			b       bytes.Buffer
 		)
 
 		// 首先获取分布式锁
@@ -49,11 +51,28 @@ func (e *Executor) ExecuteJob(jobExecuteInfo *common.JobExecuteInfo) {
 			// 上锁成功后，重置任务开始时间
 			result.StartTime = time.Now()
 			//	 执行 shell 命令
-			cmd = exec.CommandContext(context.TODO(), "/bin/bash", "-c", jobExecuteInfo.Job.Command)
+			cmd = exec.Command("/bin/bash", "-c", jobExecuteInfo.Job.Command)
+			// 创建一个新的进程组
+			cmd.SysProcAttr = &syscall.SysProcAttr{
+				Setpgid: true,
+			}
 
-			//	执行并捕获输出
-			output, err = cmd.CombinedOutput()
+			cmd.Stdout = &b
+			cmd.Stderr = &b
 
+			if err = cmd.Start(); err != nil {
+				goto DONE
+			}
+
+			jobExecuteInfo.Pid = cmd.Process.Pid
+
+			if err = cmd.Wait(); err != nil {
+				goto DONE
+			}
+
+			output = b.Bytes()
+
+		DONE:
 			result.EndTime = time.Now()
 			result.Output = output
 			result.Err = err
