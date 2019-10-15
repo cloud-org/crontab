@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ronething/golang-crontab/common"
+	"math/rand"
 	"os/exec"
 	"syscall"
 	"time"
@@ -39,6 +40,9 @@ func (e *Executor) ExecuteJob(jobExecuteInfo *common.JobExecuteInfo) {
 		}
 
 		result.StartTime = time.Now()
+
+		// 随机睡眠(0-1) 考虑到各个 worker 之间的时钟有相差 us，所以通过牺牲最多 1s 进行公平抢锁
+		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
 		err = jobLock.TryLock()
 		defer jobLock.UnLock() // 最终需要释放锁
