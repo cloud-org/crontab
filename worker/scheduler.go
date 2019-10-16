@@ -95,7 +95,7 @@ func (s *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 	// 1、遍历所有任务
 	for _, jobPlan = range s.jobPlanTable {
 		if jobPlan.NextTime.Before(now) || jobPlan.NextTime.Equal(now) {
-			//	TODO: 尝试执行任务(如果上一次任务还没有执行完成，则此次不执行)
+			// 尝试执行任务(如果上一次任务还没有执行完成，则此次不执行)
 			s.TryStartJob(jobPlan)
 			jobPlan.NextTime = jobPlan.Expr.Next(now) // 更新下次执行时间
 		}
@@ -175,8 +175,30 @@ func (s *Scheduler) PushJobResult(jobResult *common.JobExecuteResult) {
 
 // 处理任务结果
 func (s *Scheduler) handleJobResult(jobExecuteResult *common.JobExecuteResult) {
+	var (
+		jobLog *common.JobLog
+	)
 	// 删除执行状态
 	delete(s.jobExecutingTable, jobExecuteResult.ExecuteInfo.Job.Name)
+
+	// 上报日志
+	if jobExecuteResult.Err != common.ErrLockAlreadyRequired {
+		jobLog = &common.JobLog{
+			JobName:      jobExecuteResult.ExecuteInfo.Job.Name,
+			Command:      jobExecuteResult.ExecuteInfo.Job.Command,
+			Output:       string(jobExecuteResult.Output),
+			PlanTime:     jobExecuteResult.ExecuteInfo.PlanTime.UnixNano() / 1000 / 1000,
+			ScheduleTime: jobExecuteResult.ExecuteInfo.RealTime.UnixNano() / 1000 / 1000,
+			StartTime:    jobExecuteResult.StartTime.UnixNano() / 1000 / 1000,
+			EndTime:      jobExecuteResult.EndTime.UnixNano() / 1000 / 1000,
+		}
+		if jobExecuteResult.Err != nil {
+			jobLog.Err = jobExecuteResult.Err.Error()
+		} else {
+			jobLog.Err = ""
+		}
+		G_logSink.Append(jobLog)
+	}
 
 	if jobExecuteResult.Err == nil {
 		fmt.Println("任务执行完成", jobExecuteResult.ExecuteInfo.Job.Name, string(jobExecuteResult.Output))

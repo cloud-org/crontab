@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/ronething/golang-crontab/common"
 	"go.etcd.io/etcd/clientv3"
@@ -81,7 +80,8 @@ func (j *JobLock) TryLock() (err error) {
 
 	//	判断是否抢到了锁
 	if !txnResp.Succeeded {
-		err = errors.New(fmt.Sprintln("锁被占用", string(txnResp.Responses[0].GetResponseRange().Kvs[0].Key)))
+		//err = errors.New(fmt.Sprintln("锁被占用", string(txnResp.Responses[0].GetResponseRange().Kvs[0].Key)))
+		err = common.ErrLockAlreadyRequired
 		goto FAIL
 	}
 

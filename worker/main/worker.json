@@ -4,5 +4,13 @@
     "127.0.0.1:2379"
   ],
   "etcd 连接超时时间": "单位毫秒",
-  "etcd_dial_timeout": 5000
+  "etcd_dial_timeout": 5000,
+  "mongodb 地址": "采用 mongodb uri 格式",
+  "mongodb_uri": "mongodb://127.0.0.1:27017",
+  "mongodb 连接超时时间": "单位毫秒",
+  "mongodb_connect_timeout": 5000,
+  "日志批次大小": "为了减少 mongodb 网络延迟",
+  "job_log_batch_size": 100,
+  "日志自动提交超时时间": "防止日志堆积过久",
+  "job_log_commit_timeout": 1000
 }
