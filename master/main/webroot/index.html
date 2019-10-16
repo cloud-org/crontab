@@ -154,7 +154,7 @@
         function timeFormat(millsecond) {
             // 前缀补0: 2018-08-07 08:01:03.345
             function paddingNum(num, n) {
-                var len = num.toString().length
+                let len = num.toString().length
                 while (len < n) {
                     num = '0' + num
                     len++
@@ -162,15 +162,15 @@
                 return num
             }
 
-            var date = new Date(millsecond)
-            var year = date.getFullYear()
-            var month = paddingNum(date.getMonth() + 1, 2)
-            var day = paddingNum(date.getDate(), 2)
-            var hour = paddingNum(date.getHours(), 2)
-            var minute = paddingNum(date.getMinutes(), 2)
-            var second = paddingNum(date.getSeconds(), 2)
-            var millsecond = paddingNum(date.getMilliseconds(), 3)
-            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second + "." + millsecond
+            let date = new Date(millsecond);
+            let year = date.getFullYear();
+            let month = paddingNum(date.getMonth() + 1, 2);
+            let day = paddingNum(date.getDate(), 2);
+            let hour = paddingNum(date.getHours(), 2);
+            let minute = paddingNum(date.getMinutes(), 2);
+            let second = paddingNum(date.getSeconds(), 2);
+            let mill = paddingNum(date.getMilliseconds(), 3);
+            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second + "." + mill
         }
 
         // 1, 绑定按钮的事件处理函数
@@ -179,15 +179,15 @@
         // 编辑任务
         $("#job-list").on("click", ".edit-job", function (event) {
             // 取当前job的信息，赋值给模态框的input
-            $('#edit-name').val($(this).parents('tr').children('.job-name').text())
-            $('#edit-command').val($(this).parents('tr').children('.job-command').text())
-            $('#edit-cronExpr').val($(this).parents('tr').children('.job-cronExpr').text())
+            $('#edit-name').val($(this).parents('tr').children('.job-name').text());
+            $('#edit-command').val($(this).parents('tr').children('.job-command').text());
+            $('#edit-cronExpr').val($(this).parents('tr').children('.job-cronExpr').text());
             // 弹出模态框
             $('#edit-modal').modal('show')
         })
         // 删除任务
         $("#job-list").on("click", ".delete-job", function (event) { // javascript bind
-            var jobName = $(this).parents("tr").children(".job-name").text()
+            let jobName = $(this).parents("tr").children(".job-name").text();
             $.ajax({
                 url: '/job/delete',
                 type: 'post',
@@ -200,7 +200,7 @@
         })
         // 杀死任务
         $("#job-list").on("click", ".kill-job", function (event) {
-            var jobName = $(this).parents("tr").children(".job-name").text()
+            let jobName = $(this).parents("tr").children(".job-name").text();
             $.ajax({
                 url: '/job/kill',
                 type: 'post',
@@ -213,7 +213,7 @@
         })
         // 保存任务
         $('#save-job').on('click', function () {
-            var jobInfo = {
+            let jobInfo = {
                 name: $('#edit-name').val(),
                 command: $('#edit-command').val(),
                 cron_expr: $('#edit-cronExpr').val()
@@ -241,7 +241,7 @@
             $('#log-list tbody').empty()
 
             // 获取任务名
-            var jobName = $(this).parents('tr').children('.job-name').text()
+            let jobName = $(this).parents('tr').children('.job-name').text()
 
             // 请求/job/log接口
             $.ajax({
@@ -253,17 +253,17 @@
                         return
                     }
                     // 遍历日志
-                    var logList = resp.data
-                    for (var i = 0; i < logList.length; ++i) {
-                        var log = logList[i]
-                        var tr = $('<tr>')
+                    let logList = resp.data
+                    for (let i = 0; i < logList.length; ++i) {
+                        let log = logList[i]
+                        let tr = $('<tr>')
                         tr.append($('<td>').html(log.command))
                         tr.append($('<td>').html(log.err))
                         tr.append($('<td>').html(log.output))
-                        tr.append($('<td>').html(timeFormat(log.planTime)))
-                        tr.append($('<td>').html(timeFormat(log.scheduleTime)))
-                        tr.append($('<td>').html(timeFormat(log.startTime)))
-                        tr.append($('<td>').html(timeFormat(log.endTime)))
+                        tr.append($('<td>').html(timeFormat(log.plan_time)))
+                        tr.append($('<td>').html(timeFormat(log.schedule_time)))
+                        tr.append($('<td>').html(timeFormat(log.start_time)))
+                        tr.append($('<td>').html(timeFormat(log.end_time)))
                         console.log(tr)
                         $('#log-list tbody').append(tr)
                     }
@@ -288,11 +288,11 @@
                         return
                     }
 
-                    var workerList = resp.data
+                    let workerList = resp.data
                     // 遍历每个IP, 添加到模态框的table中
-                    for (var i = 0; i < workerList.length; ++i) {
-                        var workerIP = workerList[i]
-                        var tr = $('<tr>')
+                    for (let i = 0; i < workerList.length; ++i) {
+                        let workerIP = workerList[i]
+                        let tr = $('<tr>')
                         tr.append($('<td>').html(workerIP))
                         $('#worker-list tbody').append(tr)
                     }
@@ -314,17 +314,17 @@
                         return
                     }
                     // 任务数组
-                    var jobList = resp.data
+                    let jobList = resp.data
                     // 清理列表
                     $('#job-list tbody').empty()
                     // 遍历任务, 填充table
-                    for (var i = 0; i < jobList.length; ++i) {
-                        var job = jobList[i];
-                        var tr = $("<tr>")
+                    for (let i = 0; i < jobList.length; ++i) {
+                        let job = jobList[i];
+                        let tr = $("<tr>")
                         tr.append($('<td class="job-name">').html(job.name))
                         tr.append($('<td class="job-command">').html(job.command))
                         tr.append($('<td class="job-cronExpr">').html(job.cron_expr))
-                        var toolbar = $('<div class="btn-toolbar">')
+                        let toolbar = $('<div class="btn-toolbar">')
                             .append('<button class="btn btn-info edit-job">编辑</button>')
                             .append('<button class="btn btn-danger delete-job">删除</button>')
                             .append('<button class="btn btn-warning kill-job">强杀</button>')

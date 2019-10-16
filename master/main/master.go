@@ -37,6 +37,11 @@ func main() {
 		goto ERR
 	}
 
+	// 初始化日志管理器
+	if err = master.InitLogMgr(); err != nil {
+		goto ERR
+	}
+
 	// etcd 任务管理器
 	if err = master.InitJobMgr(); err != nil {
 		goto ERR

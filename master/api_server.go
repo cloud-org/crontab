@@ -35,6 +35,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
+	mux.HandleFunc("/job/log", handleJobLog)
 
 	// 静态文件目录
 	staticDir = http.Dir(G_config.Webroot)
@@ -64,6 +65,46 @@ func InitApiServer() (err error) {
 
 	return
 
+}
+
+// 展示日志
+// GET /job/log jobName=j&skip=0&limit=10
+func handleJobLog(w http.ResponseWriter, r *http.Request) {
+	var (
+		err     error
+		jobName string
+		skip    int
+		limit   int
+		logArr  []*common.JobLog
+		resp    []byte
+	)
+
+	if err = r.ParseForm(); err != nil {
+		goto ERR
+	}
+
+	jobName = r.Form.Get("name")
+	if skip, err = strconv.Atoi(r.Form.Get("skip")); err != nil {
+		skip = 0
+	}
+	if limit, err = strconv.Atoi(r.Form.Get("limit")); err != nil {
+		limit = 10
+	}
+
+	if logArr, err = G_logMgr.ListLog(jobName, skip, limit); err != nil {
+		goto ERR
+	}
+
+	if resp, err = common.BuildResponse(0, "success", logArr); err == nil {
+		w.Write(resp)
+	}
+
+	return
+
+ERR:
+	if resp, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		w.Write(resp)
+	}
 }
 
 // 强杀一个任务

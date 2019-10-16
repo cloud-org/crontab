@@ -12,5 +12,10 @@
   "etcd 连接超时时间": "单位毫秒",
   "etcd_dial_timeout": 5000,
   "web 页面根目录": "静态页面，前后端分离",
-  "webroot": "./webroot"
+  "webroot": "./webroot",
+  "mongodb 地址": "采用 mongodb uri 格式",
+  "mongodb_uri": "mongodb://127.0.0.1:27017",
+  "mongodb 连接超时时间": "单位毫秒",
+  "mongodb_connect_timeout": 5000,
+  "日志批次大小": "为了减少 mongodb 网络延迟"
 }

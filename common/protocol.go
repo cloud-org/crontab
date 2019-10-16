@@ -54,19 +54,29 @@ type JobExecuteResult struct {
 }
 
 type JobLog struct {
-	JobName      string `bson:"jobName"`
-	Command      string `bson:"command"`
-	Err          string `bson:"err"`
-	Output       string `bson:"output"`
-	PlanTime     int64  `bson:"planTime"`
-	ScheduleTime int64  `bson:"scheduleTime"`
-	StartTime    int64  `bson:"startTime"`
-	EndTime      int64  `bson:"endTime"`
+	JobName      string `json:"job_name" bson:"jobName"`
+	Command      string `json:"command" bson:"command"`
+	Err          string `json:"err" bson:"err"`
+	Output       string `json:"output" bson:"output"`
+	PlanTime     int64  `json:"plan_time" bson:"planTime"`
+	ScheduleTime int64  `json:"schedule_time" bson:"scheduleTime"`
+	StartTime    int64  `json:"start_time" bson:"startTime"`
+	EndTime      int64  `json:"end_time" bson:"endTime"`
 }
 
 // 日志批次
 type LogBatch struct {
 	Logs []interface{}
+}
+
+// 任务执行日志过滤条件
+type JobLogFilter struct {
+	JobName string `bson:"jobName"`
+}
+
+// 任务日志排序规则
+type SortLogByStartTime struct {
+	SortOrder int `bson:"startTime"` // -1
 }
 
 func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err error) {
