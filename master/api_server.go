@@ -36,6 +36,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
 	mux.HandleFunc("/job/log", handleJobLog)
+	mux.HandleFunc("/worker/list", handleWorkerList)
 
 	// 静态文件目录
 	staticDir = http.Dir(G_config.Webroot)
@@ -64,6 +65,31 @@ func InitApiServer() (err error) {
 	go httpServer.Serve(listener)
 
 	return
+
+}
+
+// 获取健康 worker 节点列表
+func handleWorkerList(w http.ResponseWriter, r *http.Request) {
+	var (
+		workerArr []string
+		err       error
+		resp      []byte
+	)
+
+	if workerArr, err = G_workerMgr.ListWorkers(); err != nil {
+		goto ERR
+	}
+
+	if resp, err = common.BuildResponse(0, "success", workerArr); err == nil {
+		w.Write(resp)
+	}
+
+	return
+
+ERR:
+	if resp, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		w.Write(resp)
+	}
 
 }
 

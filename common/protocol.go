@@ -121,6 +121,11 @@ func ExtractKillerName(killerKey string) string {
 	return strings.TrimPrefix(killerKey, JobKillerDir)
 }
 
+// 提取 worker ip
+func ExtractWorkerIP(regKey string) string {
+	return strings.TrimPrefix(regKey, JobWorkerDir)
+}
+
 func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
 	return &JobEvent{
 		EventType: eventType,
