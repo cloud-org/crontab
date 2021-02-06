@@ -1,6 +1,23 @@
-# golang-crontab
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-golang 实现分布式任务调度系统(依赖 etcd)
+- [crontab](#crontab)
+  - [依赖](#%E4%BE%9D%E8%B5%96)
+    - [etcd](#etcd)
+    - [mongodb](#mongodb)
+  - [架构](#%E6%9E%B6%E6%9E%84)
+    - [master](#master)
+    - [worker](#worker)
+  - [效果](#%E6%95%88%E6%9E%9C)
+  - [致谢](#%E8%87%B4%E8%B0%A2)
+  - [TODO](#todo)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# crontab
+
+golang 实现分布式任务调度系统
 
 ## 依赖
 
@@ -22,9 +39,7 @@ https://github.com/mongodb/mongo
 
 ## 效果
 
-![master](https://i.loli.net/2019/10/19/lwDK9fnyzWmEoCG.png)
-
-![command](https://i.loli.net/2019/10/19/nfsONJxTvMPaCFE.png)
+![crontab](./images/crontab.png)
 
 ## 致谢
 
