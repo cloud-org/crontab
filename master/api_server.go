@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ronething/golang-crontab/common"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -110,6 +111,7 @@ func handleJobLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jobName = r.Form.Get("name")
+	log.Printf("job name is %v\n", jobName)
 	if skip, err = strconv.Atoi(r.Form.Get("skip")); err != nil {
 		skip = 0
 	}

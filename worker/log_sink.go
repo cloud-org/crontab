@@ -5,6 +5,7 @@ import (
 	"github.com/ronething/golang-crontab/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"time"
 )
 
@@ -21,7 +22,12 @@ var (
 )
 
 func (l *LogSink) saveLogs(batch *common.LogBatch) {
-	l.logCollection.InsertMany(context.TODO(), batch.Logs)
+	res, err := l.logCollection.InsertMany(context.TODO(), batch.Logs)
+	if err != nil {
+		log.Printf("插入数据失败 err: %v\n", err)
+		return
+	}
+	log.Printf("日志保存记录 interids is: %v\n", res.InsertedIDs)
 }
 
 func (l *LogSink) writeLoop() {
